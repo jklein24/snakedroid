@@ -77,42 +77,64 @@ class MainActivity : ComponentActivity() {
             }
 
             SnakeInterviewTheme {
-                Column(modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = Color.DarkGray)
-                ) {
-                    GameBoard(gameState, boardSizePixels = BOARD_SIZE)
-                    Spacer(modifier = Modifier.height(32.dp))
-                    ScoreBoard(gameState.score, gameState.highScore, modifier = Modifier
-                        .widthIn(max = 200.dp)
-                        .padding(24.dp))
-                    Spacer(modifier = Modifier.weight(1f))
-                    Controls(
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(end = 24.dp),
-                        onUpPress = { gameState = gameState.copy(direction = Direction.UP) },
-                        onDownPress = { gameState = gameState.copy(direction = Direction.DOWN) },
-                        onLeftPress = { gameState = gameState.copy(direction = Direction.LEFT) },
-                        onRightPress = { gameState = gameState.copy(direction = Direction.RIGHT) },
-                    )
-                    Spacer(modifier = Modifier.height(32.dp))
-                }
-                if (gameState.gameOver) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        GameOverDialog(modifier = Modifier.widthIn(min = 200.dp)) {
-                            gameState = GameState.initial(
-                                boardWidth = BOARD_SIZE,
-                                boardHeight = BOARD_SIZE,
-                                snakeLength = 3,
-                                highScore = gameState.highScore,
-                            )
-                            coroutineScope.launch {
-                                loop()
-                            }
+                GameScreen(
+                    gameState = gameState,
+                    onUpPress = { gameState = gameState.copy(direction = Direction.UP) },
+                    onDownPress = { gameState = gameState.copy(direction = Direction.DOWN) },
+                    onLeftPress = { gameState = gameState.copy(direction = Direction.LEFT) },
+                    onRightPress = { gameState = gameState.copy(direction = Direction.RIGHT) },
+                    onRestart = {
+                        gameState = GameState.initial(
+                            boardWidth = BOARD_SIZE,
+                            boardHeight = BOARD_SIZE,
+                            snakeLength = 3,
+                            highScore = gameState.highScore,
+                        )
+                        coroutineScope.launch {
+                            loop()
                         }
                     }
-                }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GameScreen(
+    gameState: GameState,
+    modifier: Modifier = Modifier,
+    onUpPress: () -> Unit = {},
+    onDownPress: () -> Unit = {},
+    onLeftPress: () -> Unit = {},
+    onRightPress: () -> Unit = {},
+    onRestart: () -> Unit = {},
+) {
+    Column(modifier = modifier
+        .fillMaxSize()
+        .background(color = Color.DarkGray)
+    ) {
+        GameBoard(gameState, boardSizePixels = BOARD_SIZE)
+        Spacer(modifier = Modifier.height(32.dp))
+        ScoreBoard(gameState.score, gameState.highScore, modifier = Modifier
+            .widthIn(max = 200.dp)
+            .padding(24.dp))
+        Spacer(modifier = Modifier.weight(1f))
+        Controls(
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(end = 24.dp),
+            onUpPress = onUpPress,
+            onDownPress = onDownPress,
+            onLeftPress = onLeftPress,
+            onRightPress = onRightPress,
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+    if (gameState.gameOver) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            GameOverDialog(modifier = Modifier.widthIn(min = 200.dp)) {
+                onRestart()
             }
         }
     }
@@ -223,9 +245,6 @@ fun GameOverDialog(modifier: Modifier = Modifier, onRestart: () -> Unit = {}) {
 @Composable
 fun SnakePreview() {
     SnakeInterviewTheme {
-        Column {
-            GameBoard(GameState.initial(30, 30, 3))
-            Controls()
-        }
+        GameScreen(gameState = GameState.initial(boardWidth = 30, boardHeight = 30))
     }
 }
