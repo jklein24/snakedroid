@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
             suspend fun loop() {
                 while (!gameState.gameOver) {
                     gameState = gameState.update()
+                    // TODO: Integrate speed increases.
                     delay(100)
                 }
             }
