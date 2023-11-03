@@ -13,8 +13,46 @@ data class GameState(
     val boardHeight: Int,
 ) {
     fun update(): GameState {
-        // TODO: Implement this.
-        return this
+        if (gameOver || paused) {
+            return this
+        }
+
+        val newSnake = snake.update(direction, speed, boardWidth, boardHeight)
+        val newFood = if (newSnake.head() == food.position) {
+            food.copy(eaten = true)
+        } else {
+            food
+        }
+
+        return GameState(
+            snake = if (newFood.eaten) {
+                newSnake.copy(
+                    body = listOf(newSnake.head()) + newSnake.body,
+                    speed = newSnake.speed + 1,
+                )
+            } else {
+                newSnake
+            },
+            food = if (newFood.eaten) {
+                val newPosition = Position.random(BOARD_SIZE, BOARD_SIZE)
+                if (newSnake.body.contains(newPosition)) {
+                    // If the new food position is inside the snake, try again.
+                    newFood.copy(position = newPosition)
+                } else {
+                    newFood.copy(position = newPosition, eaten = false)
+                }
+            } else {
+                newFood
+            },
+            score = if (newFood.eaten) score + 1 else score,
+            gameOver = newSnake.dead,
+            paused = false,
+            direction = direction,
+            speed = speed,
+            highScore = if (newSnake.dead && score > highScore) score else highScore,
+            boardWidth = boardWidth,
+            boardHeight = boardHeight,
+        )
     }
 
     companion object {
@@ -51,7 +89,28 @@ data class GameState(
 data class Snake(
     val body: List<Position>,
     val dead: Boolean
-)
+) {
+    fun update(direction: Direction, speed: Int, boardWidth: Int, boardHeight: Int): Snake {
+        if (dead) {
+            return this
+        }
+
+        val newHead = head().move(direction)
+        val newBody = listOf(newHead) + body.dropLast(1)
+        val hitWall = newHead.x !in 0 until boardWidth || newHead.y !in 0 until boardHeight
+        val newDead = newHead in body.drop(1) || hitWall
+
+        return Snake(
+            body = newBody,
+            speed = speed,
+            dead = newDead,
+        )
+    }
+
+    fun head(): Position {
+        return body.first()
+    }
+}
 
 data class Food(
     val position: Position,
@@ -62,6 +121,15 @@ data class Position(
     val x: Int,
     val y: Int
 ) {
+    fun move(direction: Direction): Position {
+        return when (direction) {
+            Direction.UP -> Position(x, y - 1)
+            Direction.DOWN -> Position(x, y + 1)
+            Direction.LEFT -> Position(x - 1, y)
+            Direction.RIGHT -> Position(x + 1, y)
+        }
+    }
+
     companion object {
         fun random(width: Int, height: Int): Position {
             return Position(
