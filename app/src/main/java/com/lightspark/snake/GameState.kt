@@ -28,7 +28,6 @@ data class GameState(
             snake = if (newFood.eaten) {
                 newSnake.copy(
                     body = listOf(newSnake.head()) + newSnake.body,
-                    speed = newSnake.speed + 1,
                 )
             } else {
                 newSnake
@@ -48,7 +47,7 @@ data class GameState(
             gameOver = newSnake.dead,
             paused = false,
             direction = direction,
-            speed = speed,
+            speed = if (newFood.eaten) speed + 1 else speed,
             highScore = if (newSnake.dead && score > highScore) score else highScore,
             boardWidth = boardWidth,
             boardHeight = boardHeight,
@@ -102,7 +101,6 @@ data class Snake(
 
         return Snake(
             body = newBody,
-            speed = speed,
             dead = newDead,
         )
     }

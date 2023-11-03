@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.lightspark.snake.ui.theme.SnakeInterviewTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.sqrt
 
 const val BOARD_SIZE = 30
 
@@ -66,8 +67,7 @@ class MainActivity : ComponentActivity() {
             suspend fun loop() {
                 while (!gameState.gameOver) {
                     gameState = gameState.update()
-                    // TODO: Integrate speed increases.
-                    delay(100)
+                    delay(250 / sqrt(gameState.speed.toDouble()).toLong() + 10)
                 }
             }
 
