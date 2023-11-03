@@ -28,7 +28,6 @@ data class GameState(
                     } else {
                         (snakeLength - 1 downTo 0).map { Position(randomPosition.x + it, randomPosition.y) }
                     },
-                    speed = 1,
                     dead = false,
                 ),
                 food = Food(
@@ -51,7 +50,6 @@ data class GameState(
 
 data class Snake(
     val body: List<Position>,
-    val speed: Int,
     val dead: Boolean
 )
 
